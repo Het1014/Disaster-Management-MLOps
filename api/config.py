@@ -1,0 +1,1 @@
+ML_SERVICE_URL = "http://ml-container:5000"
