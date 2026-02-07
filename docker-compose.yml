@@ -9,7 +9,7 @@ services:
     build: ./database
     container_name: postgres-db
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   api-service:
     build: ./api
