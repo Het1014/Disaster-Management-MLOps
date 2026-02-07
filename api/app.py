@@ -18,7 +18,7 @@ def predict():
     response = requests.post(
         f"{ML_SERVICE_URL}/predict",
         json={"message": data["message"]},
-        timeout=5
+        timeout=15
     )
 
     return jsonify(response.json()), response.status_code
