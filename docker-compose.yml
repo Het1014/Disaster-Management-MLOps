@@ -1,16 +1,26 @@
+networks:
+  mlops-net:
+    external: true
+
 services:
   ml-service:
     build: ./ml
+    networks:
+      - mlops-net
     ports:
       - "5000:5000"
 
   db:
     build: ./database
+    networks:
+      - mlops-net
     ports:
       - "5433:5432"
 
   api-service:
     build: ./api
+    networks:
+      - mlops-net
     ports:
       - "8000:8000"
     depends_on:
@@ -19,6 +29,8 @@ services:
 
   streamlit:
     build: ./streamlit
+    networks:
+      - mlops-net
     ports:
       - "8501:8501"
     depends_on:
