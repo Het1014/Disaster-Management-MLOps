@@ -1,27 +1,24 @@
 services:
   ml-service:
     build: ./ml
-    container_name: ml-container
     ports:
       - "5000:5000"
 
   db:
     build: ./database
-    container_name: postgres-db
     ports:
       - "5433:5432"
 
   api-service:
     build: ./api
-    container_name: api-container
     ports:
       - "8000:8000"
     depends_on:
       - ml-service
       - db
+
   streamlit:
     build: ./streamlit
-    container_name: streamlit-ui
     ports:
       - "8501:8501"
     depends_on:
