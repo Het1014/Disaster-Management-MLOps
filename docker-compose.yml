@@ -1,37 +1,43 @@
-networks:
-  mlops-net:
-    external: true
-
 services:
-  ml-service:
-    build: ./ml
-    networks:
-      - mlops-net
+  streamlit:
+    build: ./streamlit
     ports:
-      - "5000:5000"
-
-  db:
-    build: ./database
+      - "8501:8501"
     networks:
-      - mlops-net
-    ports:
-      - "5433:5432"
+      - frontend_net
 
   api-service:
     build: ./api
-    networks:
-      - mlops-net
     ports:
       - "8000:8000"
     depends_on:
       - ml-service
       - db
-
-  streamlit:
-    build: ./streamlit
     networks:
-      - mlops-net
-    ports:
-      - "8501:8501"
-    depends_on:
-      - api-service
+      - frontend_net
+      - backend_net
+
+  ml-service:
+    build: ./ml
+    expose:
+      - "5000"
+    networks:
+      - backend_net
+
+  db:
+    build: ./database
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: admin
+    expose:
+      - "5432"
+    networks:
+      - backend_net
+
+networks:
+  frontend_net:
+    name: disaster_frontend_net
+    driver: bridge
+  backend_net:
+    name: disaster_backend_net
+    driver: bridge
