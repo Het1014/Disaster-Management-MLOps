@@ -2,7 +2,7 @@ import pandas as pd
 import joblib
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import MultinomialNB
 
 TRAIN_PATH = "../../data/processed/train_clean.csv"
 VAL_PATH = "../../data/processed/validation_clean.csv"
@@ -20,7 +20,7 @@ def train():
 
     pipeline = Pipeline([
         ("tfidf", TfidfVectorizer(max_features=3000)),
-        ("clf", LogisticRegression(max_iter=200))
+        ("clf", MultinomialNB())
     ])
 
     pipeline.fit(X_train, y_train)
