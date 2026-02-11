@@ -42,7 +42,7 @@ This ensures the system does not rely on Docker’s default networking.
 ---
 
 ## Project Folder Structure
-
+```bash
 Disaster-Management-MLOps/
 ├── api/
 │   ├── app.py
@@ -75,7 +75,7 @@ Disaster-Management-MLOps/
 ├── docker-compose.yml
 ├── README.md
 └── .gitignore
-
+```
 ---
 
 ## Technology Stack
