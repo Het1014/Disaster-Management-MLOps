@@ -1,43 +1,78 @@
+
 # Disaster-Management-MLOps
 
 An end-to-end Docker-based MLOps microservices system for disaster message classification.
 This project demonstrates manual Docker networking, service-to-service communication,
-and ML model serving using a clean, production-style architecture.
+ML model serving, and database verification using a production-style architecture.
 
 ---
 
 ## Project Overview
 
-During disaster events (floods, earthquakes, cyclones, etc.), large volumes of textual messages are generated. This system classifies disaster-related messages using a trained ML model and exposes predictions through a microservices-based MLOps pipeline.
-Each component (UI, API, ML inference, Database) runs in an isolated Docker container connected via a manually created Docker network.
+During disaster events (floods, earthquakes, cyclones, etc.), large volumes of textual messages are generated. 
+This system classifies disaster-related messages using a trained ML model and exposes predictions 
+through a microservices-based MLOps pipeline.
+
+Each component (UI, API, ML inference, Database) runs in an isolated Docker container connected 
+via manually managed Docker networks.
 
 ---
 
 ## Architecture Overview
 
-Streamlit UI → API Service → ML Service
-                              ↓
-                           Database
+Streamlit UI → API Service → ML Service  
+                              ↓  
+                          Database  
 
 Key principles:
+
 - Docker DNS–based service discovery
 - No hard-coded IP addresses
 - No localhost usage inside containers
-- Explicit user-defined Docker network
+- Explicit user-defined Docker networking
+- Optional network segmentation (frontend + backend isolation)
 
 ---
 
 ## Docker Networking (Core Requirement)
 
 This project explicitly implements manual Docker networking.
+Network created manually using Docker CLI
+Docker Compose uses this network as an external network
 
-Network details:
-- Network name: mlops-net
-- Driver: bridge
-- Network created manually using Docker CLI
-- Docker Compose uses this network as an external network
+### Primary Network (Single Network Approach)
 
-This ensures the system does not rely on Docker’s default networking.
+Network name: `mlops-net`  
+Driver: `bridge`  
+Created manually using Docker CLI
+
+```bash
+docker network create --driver bridge mlops-net
+docker network ls
+docker network inspect mlops-net
+```
+
+All containers were connected to this single network for simplified communication.
+
+---
+
+## Network Segmentation (Advanced Practical)
+
+The system was also tested with two-network segmentation to simulate production isolation.
+
+### Frontend Network
+- streamlit
+- api-service
+
+### Backend Network
+- api-service
+- ml-service
+- db
+
+This ensured:
+- Streamlit cannot directly access Database
+- ML service is not exposed to frontend
+- API acts as the gateway layer
 
 ---
 
@@ -80,15 +115,15 @@ Disaster-Management-MLOps/
 
 ## Technology Stack
 
-Infrastructure & DevOps:
+Infrastructure:
 - Docker
 - Docker Compose
-- User-defined Docker bridge network
+- User-defined Docker bridge networks
 
 Backend & ML:
 - Python 3.11
-- Flask / FastAPI
-- scikit-learn
+- Flask
+- scikit-learn==1.8.0
 - joblib
 - pandas
 - numpy
@@ -104,103 +139,183 @@ Frontend:
 
 ## How to Run the Project
 
-### 1. Clone the repository
+### 1. Clone Repository
+
 ```bash
 git clone https://github.com/Het1014/Disaster-Management-MLOps
+```
+```bash
 cd Disaster-Management-MLOps
 ```
 
-### 2. Create Docker network manually
+### 2. Create Network
+
 ```bash
 docker network create mlops-net
 ```
-### 3. Build services
+
+### 3. Build Services
+
 ```bash
 docker compose build
 ```
-### 4. Start all services
+
+### 4. Start Services
+
 ```bash
 docker compose up -d
 ```
-### 5. Verify network attachment
+
+If using project namespace:
+
+```bash
+docker compose -p disaster_v2 up -d
+```
+
+Rebuild and start:
+
+```bash
+docker compose -p disaster_v2 up --build -d
+```
+
+---
+
+## Verify Network Attachment
+
 ```bash
 docker network inspect mlops-net
 ```
+
 ---
 
 ## Verifying Inter-Service Communication
 
-Enter the API container:
+Enter API container:
+
 ```bash
 docker compose exec api-service sh
 ```
-Test ML service using Python:
-```bash
-python
-import requests
-requests.get("http://ml-service:5000")
-```
-Expected output:
-<Response [404]>
 
-A 404 response confirms successful Docker DNS resolution and inter-container connectivity.
+Test ML connectivity:
+
+```bash
+curl http://ml-service:5000/health
+```
+
+Expected successful response confirms DNS resolution.
+
+---
+
+## Database Verification via Terminal (PostgreSQL CLI)
+
+Enter DB container:
+
+```bash
+docker compose exec db psql -U admin -d postgres
+```
+
+If using project namespace:
+
+```bash
+docker compose -p disaster_v2 exec db psql -U admin -d postgres
+```
+
+Inside PostgreSQL:
+
+List databases:
+```sql
+\l
+```
+
+Connect to database:
+```sql
+\c postgres
+```
+
+List tables:
+```sql
+\dt
+```
+
+View records:
+```sql
+SELECT * FROM <table_name>;
+```
+
+Limit output:
+```sql
+SELECT * FROM <table_name> LIMIT 10;
+```
+
+Exit PostgreSQL:
+```sql
+\q
+```
+
+---
+
+## Important Docker Commands Used
+
+### Network Commands
+
+```bash
+docker network create --driver bridge mlops-net
+docker network ls
+docker network inspect mlops-net
+```
+
+### Container Commands
+
+```bash
+docker ps
+docker compose ps
+docker compose stop
+docker compose start
+docker compose down
+docker compose down -v
+docker rm -f <container_name>
+```
+
+### Build Commands
+
+```bash
+docker build -t ml-container ./ml
+docker build --no-cache -t ml-container ./ml
+docker compose build
+```
+
+### Logs & Debugging
+
+```bash
+docker logs <container_name>
+docker compose logs api-service
+docker compose logs ml-service
+docker compose logs db
+docker compose logs streamlit
+docker compose exec api-service sh
+docker compose exec ml-service sh
+```
 
 ---
 
 ## Service Endpoints
 
-Streamlit UI: http://localhost:8501
-API Service: http://localhost:8000
-ML Service: Internal only (ml-service:5000)
+Streamlit UI: http://localhost:8501  
+API Service: http://localhost:8000  
+ML Service: Internal only (ml-service:5000)  
 Database: Internal only (db:5432)
-
----
-
-## Stopping and Starting Containers
-
-Stop all containers (without removing):
-```bash
-docker compose stop
-```
-Start containers again:
-```bash
-docker compose start
-```
-Stop a single container:
-```bash
-docker stop <container_name>
-```
----
-
-## Viewing Logs
-```
-docker compose logs api-service
-docker compose logs ml-service
-docker compose logs db
-docker compose logs streamlit
-```
----
-
-## Important Notes
-
-- Containers communicate using service names, not IP addresses
-- Minimal Docker images are used
-- ML and Database services are not publicly exposed
-- Host ports are used only for UI and API access
 
 ---
 
 ## Key Takeaways
 
 - Manual Docker network implementation
-- External network usage in Docker Compose
-- Microservices-based ML architecture
-- Production-style isolation and communication
-- Application-level verification of networking
+- Two-network segmentation (frontend + backend)
+- Service-name-based communication
+- Microservices-based ML deployment architecture
 
 ---
 
 ## Conclusion
 
-This project demonstrates a real-world MLOps microservices system with explicitly managed
-Docker networking, clear separation of concerns, and scalable deployment design.
+This project demonstrates a MLOps microservices architecture with explicit Docker networking, secure service isolation, database verification via CLI, and scalable container orchestration using Docker Compose.
