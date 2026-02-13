@@ -77,7 +77,7 @@ This ensured:
 ---
 
 ## Project Folder Structure
-
+```bash
 Disaster-Management-MLOps/
 ├── api/
 │   ├── app.py
@@ -110,7 +110,7 @@ Disaster-Management-MLOps/
 ├── docker-compose.yml
 ├── README.md
 └── .gitignore
-
+```
 ---
 
 ## Technology Stack
@@ -318,4 +318,9 @@ Database: Internal only (db:5432)
 
 ## Conclusion
 
+<<<<<<< HEAD
 This project demonstrates a MLOps microservices architecture with explicit Docker networking, secure service isolation, database verification via CLI, and scalable container orchestration using Docker Compose.
+=======
+This project demonstrates a real-world MLOps microservices system with explicitly managed
+Docker networking, clear separation of concerns, and scalable deployment design.
+>>>>>>> c5752d0ffdcfe08a86d6bd3c430c1cce43ad26ac
