@@ -1,5 +1,7 @@
 import pandas as pd
 import joblib
+import mlflow
+import mlflow.sklearn
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -31,5 +33,14 @@ def train():
     joblib.dump(pipeline, MODEL_PATH)
     print("[OK] model_v1.joblib saved")
 
+    
+    mlflow.set_tracking_uri("file:./mlruns")
+    mlflow.set_experiment("First")
+
+    with mlflow.start_run():
+        mlflow.log_param("model", "LogisticRegression")
+        mlflow.log_param("max_features", 3000)
+        mlflow.log_metric("val_accuracy", val_score)
+        mlflow.sklearn.log_model(pipeline, "model")
 if __name__ == "__main__":
     train()
