@@ -166,9 +166,9 @@ Start containers again:
 ```bash
 docker compose start
 ```
-Stop a single container:
+Stop a single service container:
 ```bash
-docker stop <container_name>
+docker compose stop <service_name>
 ```
 ---
 
